@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Fruits</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<style type="text/css">
+		.platform{
+			position: absolute;
+			height: 20px;
+			width: 150px;
+			margin-top: 850px;
+			border-radius: 5px;
+		}
+		.main{
+			background-image: url(images/bg.jpg);
+			background-size: 100%;
+		}
+		body{
+			background-image: url(images/bgb.jpg);
+		}
+		h1{
+			color: white;
+		}
+		p{
+			color: white;
+		}
+	</style>
+</head>
+<body class="">
+	<p class="text-center">recommended res fullhd</p>
+	<div style="position: absolute; display: block">
+		<p>score <span class="score"></span></p>
+		<p style="margin-top: 30px">hp <span class="hp"></span></p>
+	</div>	
+	<div class="bg-warning" style="position: absolute; margin-top: 200px; width: 150px; display: none"><!--dev box можно поменять значение display если надо-->
+		<h6>dev box</h6>
+		<p>fruit pos <span class="bb"></span></p>
+		<p>platform pos <span class="pos"></span></p>
+		<p>fruit-platform <span class="diff"></span></p>
+	</div>
+	<div class="main mx-auto" style="width: 1300px; height: 900px;">
+		<div class="platform bg-danger">
+			
+		</div>
+	</div>
+	<div class="text-center abc" style="display: none; margin-top: 350px;">
+		<h1>FINAL SCORE: <span class="finscore"></span></h1>
+		<button class="btn btn-success restartbtn">restart</button>
+	</div>
+	<div class="text-center heh" style="display: none; margin-top: 350px;">
+		<img src="images/heh.png">
+		<p>my game design sucks...</p>
+	</div>
+	<script type="text/javascript">
+		let main = document.querySelector('.main')
+		let platform = document.querySelector('.platform')
+		let left = 0//позиция платформы по x (в процентах mLeft)
+		let points = 0
+		let score = document.querySelector('.score')
+		let bb = document.querySelector('.bb')
+		let pos = document.querySelector('.pos')
+		let diff = document.querySelector('.diff')
+		let hp = document.querySelector('.hp')
+		let lives = 3
+		let fscore = document.querySelector('.finscore')
+		let final = document.querySelector('.abc')
+		let restartbtn = document.querySelector('.restartbtn')
+		let heh = document.querySelector('.heh')
+		restartbtn.onclick = function(){
+			document.location.reload(true)
+		}
+		function move(e){
+			if(e.keyCode == 39){
+				if(left < 60){
+					left += 1
+					platform.style.marginLeft = left + '%'
+				}
+			}
+			if(e.keyCode == 37){
+				if(left > 0){
+					left -= 1
+					platform.style.marginLeft = left + '%'
+				}
+			}
+		}
+		document.onkeydown = move// бинд кнопок для управления
+		let apple = {
+			fallspeed:200,
+			src:'images/apple.png',
+			point:1,
+			timer:8800,
+			reach:10,
+		}
+		let banana = {
+			fallspeed:150,
+			src:'images/banana.png',
+			point:2,
+			timer:7200,
+		}//можно добавить фрукты для новых уровней и с разными характеристиками
+		/*let fruit = {
+			fallspeed: скорость падения,
+			src: картинка,
+			point: кол-во очков за фрукт,
+			timer: время за которое фрукт достигает платформы или земли
+		}
+		*/
+		let create = function(arg){//весь процесc игры
+			let img = document.createElement('img')
+			let random = function(arg){
+				let rand = Math.random()*arg
+				let round = Math.round(rand)
+				return round
+			}
+			main.appendChild(img)
+			img.src = arg.src
+			img.style.height = '70px'
+			img.style.position = 'absolute'
+			img.style.transition = '1.1s'
+			let a = 1
+			let fall = function(){
+				a = a + 1
+				img.style.marginTop = a + '%'
+			}
+			let falling = setInterval(fall,arg.fallspeed)
+			let x = random(55)//позиция фрукта по x (в процентах mLeft)
+			img.style.marginLeft = x + '%'
+			let stopf = function(){//чек позиции фрукта и платформы
+				img.style.display = "none"
+				if ((left == x) || (left == x - 1) || (left == x - 2) || (left == x - 3) || (left == x - 4) || (left == x - 5) || (left == x - 6) || (left == x - 7) || (left == x + 1) || (left == x + 2) || (left == x + 3)) {
+					points = points + arg.point
+					bb.innerHTML = x + '%'
+				}
+				else{
+					lives = lives - 1
+				}
+			}
+			let stats = function(){//обновление значений 
+				score.innerHTML = points
+				pos.innerHTML = left + '%'
+				diff.innerHTML = x - left
+				hp.innerHTML = lives
+				if(lives == 0){
+					main.style.display = "none"
+					final.style.display = 'block'
+					fscore.innerHTML = points
+					clearInterval(level1)
+					clearInterval(level)
+				}
+				if(points == 1337){
+					main.style.display = 'none'
+					heh.style.display = 'block'
+				}
+			}
+			setInterval(stats,100)
+			setTimeout(stopf,arg.timer)
+			if(points == arg.reach){//переход на некст левел
+				main.style.backgroundImage = 'url(images/bg1.png)'
+				clearInterval(level1)
+				let level = setInterval(function(){create(banana)},4000)
+			}
+		}
+		let level1 = setInterval(function(){create(apple)},1000)
+		
+	</script>
+</body>
+</html>

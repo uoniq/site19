@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Fruits</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<style type="text/css">
+		.platform{
+			position: absolute;
+			height: 150px;
+			width: 150px;
+			margin-top: 750px;
+			border-radius: 5px;
+			background-image: url(images/platform.png);
+			transition: 0.1s;
+		}
+		.main{
+			background-image: url(images/bg.jpg);
+			background-size: 100%;
+		}
+		body{
+			background-image: url(images/bgb.jpg);
+		}
+		h1{
+			color: white;
+		}
+		p{
+			color: white;
+		}
+		.spawn{
+			position: absolute;
+			width: 20px;
+			height: 20px;
+		}
+		@font-face{
+
+		font-family: 'heh';
+
+		src: url('font.TTF');
+
+		font-weight: normal;
+
+		font-style: normal;
+
+		}
+		p{
+			font-family: heh
+		}
+		.infoblock{
+			font-size: 30px
+		}
+	</style>
+</head>
+<body class="">
+	<p class="text-center">recommended res fullhd</p>
+	<div style="position: absolute; display: block" class="infoblock">
+		<p>score <span class="score"></span></p>
+		<p style="margin-top: 30px"> <span class="hp"></span></p>
+		<div>
+			<div class="hpcounter">
+				<img src="images/heart.png" alt="" width="50" class="heart">
+				<img src="images/heart.png" alt="" width="50" class="heart">
+				<img src="images/heart.png" alt="" width="50" class="heart">
+			</div>
+			<div class="boost">
+				
+			</div>
+		</div>
+		<p style="margin-top: 30px">combo <span class="combo"></span></p>
+	</div>	
+	<div class="bg-warning" style="position: absolute; margin-top: 200px; width: 150px; display: none"><!--dev box можно поменять значение display если надо-->
+		<h6>dev box</h6>
+		<p>fruit pos <span class="bb"></span></p>
+		<p>platform pos <span class="pos"></span></p>
+		<p>fruit-platform <span class="diff"></span></p>
+	</div>
+	<div class="main mx-auto" style="width: 1300px; height: 900px;">
+		<div class="platform">
+				
+		</div>
+	</div>
+	<div class="text-center abc" style="display: none; margin-top: 350px;">
+		<h1>FINAL SCORE: <span class="finscore"></span></h1>
+		<h1>MAX COMBO: <span class="maxcombo"></span></h1>
+		<button class="btn btn-success restartbtn">restart</button>
+	</div>
+	<div class="text-center heh" style="display: none; margin-top: 350px;">
+		<img src="images/heh.png">
+		<p>my game design sucks...</p>
+	</div>
+	<script type="text/javascript">
+		let main = document.querySelector('.main')
+		let platform = document.querySelector('.platform')
+		let left = 0//позиция платформы по x (в процентах mLeft)
+		let points = 0
+		let combo = 0
+		let maxcombo = 0
+		let mcombo = document.querySelector('.maxcombo')
+		let score = document.querySelector('.score')
+		let bb = document.querySelector('.bb')
+		let pos = document.querySelector('.pos')
+		let diff = document.querySelector('.diff')
+		let hp = document.querySelector('.hp')
+		let lives = 3
+		let fscore = document.querySelector('.finscore')
+		let final = document.querySelector('.abc')
+		let restartbtn = document.querySelector('.restartbtn')
+		let heh = document.querySelector('.heh')
+		let spawn = [6,12,18,24,30,36,42,48,54,60]
+		let combocount = document.querySelector('.combo')
+		let comboburst = document.querySelector('.comboburst')
+		let hpcounter = document.querySelector('.hpcounter')
+		let heart = document.querySelectorAll('.heart')
+		let infoblock = document.querySelector('.infoblock')
+		let boost = document.querySelector('.boost')
+		let timer = 5100
+		let reach = 200
+		let fallsp = 1
+		let pspeed = 1
+		let minhp = 1
+		let mincombo = 0
+		restartbtn.onclick = function(){
+			document.location.reload(true)
+		}
+		function move(e){
+			if(e.keyCode == 39){
+				if(left < 60){
+					left += pspeed
+					platform.style.marginLeft = left + '%'
+					platform.style.backgroundImage = 'url(images/platform.png)'
+				}
+			}
+			if(e.keyCode == 37){
+				if(left > 0){
+					left -= pspeed
+					platform.style.marginLeft = left + '%'
+					platform.style.backgroundImage = 'url(images/platform1.png)'
+				}
+			}
+		}
+		document.onkeydown = move// бинд кнопок для управления
+		let random = function(arg){
+				let rand = Math.random()*arg
+				let round = Math.round(rand)
+				return round
+			}
+		let fpos = 5
+		let create = function(){
+			let img = document.createElement('img')
+			let posrand = random(1)
+			if(posrand == 0){
+				if(fpos != 0){
+					fpos = fpos - 1
+				}
+				else{
+					fpos = fpos + 1
+				}
+			}
+			else{
+				if(fpos != 9){
+					fpos = fpos + 1
+				}
+				else{
+					fpos = fpos - 1
+				}
+			}
+			let fruitsrc = function(){
+				if(random(1) == 0){
+					return 'images/apple.png'
+				}
+				else{
+					return 'images/banana.png'
+				}
+			}
+			main.appendChild(img)
+			img.src = fruitsrc()
+			img.style.height = '70px'
+			img.style.position = 'absolute'
+			img.style.transition = '1.1s'
+			img.style.marginLeft = spawn[fpos] + '%'
+			let a = 1	
+			let fall = function(){
+				a = a + fallsp
+				img.style.marginTop = a + '%'
+			}
+			let falling = setInterval(fall,100)
+			let stopf = function(){//чек позиции фрукта и платформы
+				if ((left + '%' == img.style.marginLeft) || (left - 1 + '%' == img.style.marginLeft) || (left - 2 + '%' == img.style.marginLeft) || (left - 3 + '%' == img.style.marginLeft) || (left + 1 + '%' == img.style.marginLeft) || (left + 2 + '%' == img.style.marginLeft) || (left + 3 + '%' == img.style.marginLeft) || (left + 4 + '%' == img.style.marginLeft) || (left + 5 + '%' == img.style.marginLeft) || (left + 6 + '%' == img.style.marginLeft) || (left + 7 + '%' == img.style.marginLeft)) {
+					combo = combo + 1
+					combocount.innerHTML = combo + 'x'
+					points = points + (combo * 1)
+					bb.innerHTML = spawn[fpos] + '%'
+					if(combo >= maxcombo){
+						maxcombo = combo
+					}
+					img.style.display = "none"
+				}
+				else{
+					lives = lives - minhp	
+					if(mincombo == 0){
+						combo = 0
+						heart[lives - 1].style.display = 'none'
+					}
+					combocount.innerHTML = combo + 'x'
+					let hehe = function(){
+						img.style.display = "none"
+					}
+					setTimeout(hehe, 800)
+				}
+			}
+			setTimeout(stopf,timer)
+			let stats = function(){//обновление значений 
+				score.innerHTML = points
+				pos.innerHTML = left + '%'
+				diff.innerHTML = spawn[fpos] - left
+				if(lives == 0){
+					main.style.display = "none"
+					final.style.display = 'block'
+					fscore.innerHTML = points
+					mcombo.innerHTML = maxcombo
+					clearInterval(level)
+					clearInterval(trapcreate)
+					infoblock.style.display = 'none'
+				}
+				if (points >= reach) {
+					reach = reach * 2
+					timer = timer - 250
+					fallsp = fallsp + 0.1
+				}
+			}
+			setInterval(stats,100)
+		}
+		let level = setInterval(create,1000)
+		let trap = function(){
+			let img = document.createElement('img')
+			main.appendChild(img)
+			img.src = 'images/bomb.png'
+			img.style.height = '100px'
+			img.style.position = 'absolute'
+			img.style.transition = '1.1s'
+			img.style.marginLeft = spawn[random(9)] + '%'
+			let a = 1	
+			let fall = function(){
+				a = a + 1
+				img.style.marginTop = a + '%'
+			}
+			let falling = setInterval(fall,100)
+			let stopf = function(){//чек позиции бомбы и платформы
+				if ((left + '%' == img.style.marginLeft) || (left - 1 + '%' == img.style.marginLeft) || (left - 2 + '%' == img.style.marginLeft) || (left - 3 + '%' == img.style.marginLeft) || (left + 1 + '%' == img.style.marginLeft) || (left + 2 + '%' == img.style.marginLeft) || (left + 3 + '%' == img.style.marginLeft) || (left + 4 + '%' == img.style.marginLeft) || (left + 5 + '%' == img.style.marginLeft) || (left + 6 + '%' == img.style.marginLeft) || (left + 7 + '%' == img.style.marginLeft)) {
+					if (mincombo == 0) {
+						combo = 0
+						heart[lives - 1].style.display = 'none'
+					}
+					combocount.innerHTML = combo + 'x'
+					lives = lives - minhp		
+					img.style.display = "none"
+				}
+				else{
+					let hehe = function(){
+						img.style.display = "none"
+					}
+					setTimeout(hehe, 800)
+				}
+			}
+			setTimeout(stopf,5100)
+		}
+		let trapcreate = setInterval(trap,15000)
+		let heartf = function(){
+			let img = document.createElement('img')
+			main.appendChild(img)
+			img.src = 'images/heart.png'
+			img.style.height = '100px'
+			img.style.position = 'absolute'
+			img.style.transition = '1.1s'
+			img.style.marginLeft = spawn[random(9)] + '%'
+			let a = 1	
+			let fall = function(){
+				a = a + 1
+				img.style.marginTop = a + '%'
+			}
+			let falling = setInterval(fall,100)
+			let stopf = function(){//чек позиции бомбы и платформы
+				
+				if ((left + '%' == img.style.marginLeft) || (left - 1 + '%' == img.style.marginLeft) || (left - 2 + '%' == img.style.marginLeft) || (left - 3 + '%' == img.style.marginLeft) || (left + 1 + '%' == img.style.marginLeft) || (left + 2 + '%' == img.style.marginLeft) || (left + 3 + '%' == img.style.marginLeft) || (left + 4 + '%' == img.style.marginLeft) || (left + 5 + '%' == img.style.marginLeft) || (left + 6 + '%' == img.style.marginLeft)) {
+					lives = lives + 1
+					img.style.display = "none"
+					let hpheh = document.createElement('img')
+					hpcounter.appendChild(hpheh)
+					hpheh.src = 'images/heart.png'
+					hpheh.style.height = '50px'
+				}
+				else{
+					let hehe = function(){
+						img.style.display = "none"
+					}
+					setTimeout(hehe, 800)
+				}
+			}
+			setTimeout(stopf,5100)
+		}
+		let heartcreate = setInterval(heartf,20000)
+		let lightning = function(){
+			let img = document.createElement('img')
+			main.appendChild(img)
+			img.src = 'images/lightning.png'
+			img.style.height = '100px'
+			img.style.position = 'absolute'
+			img.style.transition = '1.1s'
+			img.style.marginLeft = spawn[random(9)] + '%'
+			let a = 1	
+			let fall = function(){
+				a = a + 1
+				img.style.marginTop = a + '%'
+			}
+			let falling = setInterval(fall,100)
+			let stopf = function(){//чек позиции бомбы и платформы
+				
+				if ((left + '%' == img.style.marginLeft) || (left - 1 + '%' == img.style.marginLeft) || (left - 2 + '%' == img.style.marginLeft) || (left - 3 + '%' == img.style.marginLeft) || (left + 1 + '%' == img.style.marginLeft) || (left + 2 + '%' == img.style.marginLeft) || (left + 3 + '%' == img.style.marginLeft) || (left + 4 + '%' == img.style.marginLeft) || (left + 5 + '%' == img.style.marginLeft) || (left + 6 + '%' == img.style.marginLeft)) {
+					pspeed = 3
+					img.style.display = "none"
+					let booster = document.createElement('img')
+					boost.appendChild(booster)
+					booster.src = 'images/lightning.png'
+					booster.style.height = '50px'
+					let booststop = function(){
+						pspeed = 1
+						booster.style.display = 'none'
+					}
+					setTimeout(booststop,10000)
+				}
+				else{
+					let hehe = function(){
+						img.style.display = "none"
+					}
+					setTimeout(hehe, 800)
+				}
+			}
+			setTimeout(stopf,5100)
+		}
+		let lboost = setInterval(lightning,25000)
+		let shield = function(){
+			let img = document.createElement('img')
+			main.appendChild(img)
+			img.src = 'images/shield.png'
+			img.style.height = '100px'
+			img.style.position = 'absolute'
+			img.style.transition = '1.1s'
+			img.style.marginLeft = spawn[random(9)] + '%'
+			let a = 1	
+			let fall = function(){
+				a = a + 1
+				img.style.marginTop = a + '%'
+			}
+			let falling = setInterval(fall,100)
+			let stopf = function(){//чек позиции бомбы и платформы
+				
+				if ((left + '%' == img.style.marginLeft) || (left - 1 + '%' == img.style.marginLeft) || (left - 2 + '%' == img.style.marginLeft) || (left - 3 + '%' == img.style.marginLeft) || (left + 1 + '%' == img.style.marginLeft) || (left + 2 + '%' == img.style.marginLeft) || (left + 3 + '%' == img.style.marginLeft) || (left + 4 + '%' == img.style.marginLeft) || (left + 5 + '%' == img.style.marginLeft) || (left + 6 + '%' == img.style.marginLeft)) {
+					mincombo = 1
+					minhp = 0
+					img.style.display = "none"
+					let shieldb = document.createElement('img')
+					boost.appendChild(shieldb)
+					shieldb.src = 'images/shield.png'
+					shieldb.style.height = '50px'
+					let booststop = function(){
+						mincombo = 0
+						minhp = 0
+						shieldb.style.display = 'none'
+					}
+					setTimeout(booststop,10000)
+				}
+				else{
+					let hehe = function(){
+						img.style.display = "none"
+					}
+					setTimeout(hehe, 800)
+				}
+			}
+			setTimeout(stopf,5100)
+		}
+		let sboost = setInterval(shield,30000)
+	</script>
+</body>
+</html>
